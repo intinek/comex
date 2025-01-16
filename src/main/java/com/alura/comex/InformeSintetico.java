@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class InformeSintetico {
     private int totalDePedidosRealizados;
@@ -28,51 +29,36 @@ public class InformeSintetico {
     }
 
     private int calcularTotalDeProductosVendidos(List<Pedido> pedidos) {
-        int total = 0;
-        for (Pedido pedido : pedidos) {
-            total += pedido.getCantidad();
-        }
-        return total;
+        // Usando Streams para calcular la suma de cantidades
+        return pedidos.stream()
+                .mapToInt(Pedido::getCantidad) // Obtener la cantidad de cada pedido
+                .sum(); // Sumar todas las cantidades
     }
 
     private BigDecimal calcularMontoDeVentas(List<Pedido> pedidos) {
-        BigDecimal total = BigDecimal.ZERO;
-        for (Pedido pedido : pedidos) {
-            total = total.add(pedido.getValorTotal());
-        }
-        return total;
+        return pedidos.stream()
+                .map(Pedido::getValorTotal) // Obtener el valor total de cada pedido
+                .reduce(BigDecimal.ZERO, BigDecimal::add); // Sumar todos los valores totales
     }
 
     private int calcularTotalDeCategorias(List<Pedido> pedidos) {
         CategoriasProcesadas categoriasProcesadas = new CategoriasProcesadas();
-        int total = 0;
-        for (Pedido pedido : pedidos) {
-            if (!categoriasProcesadas.contains(pedido.getCategoria())) {
-                total++;
-                categoriasProcesadas.add(pedido.getCategoria());
-            }
-        }
-        return total;
+        return (int) pedidos.stream()
+                .filter(pedido -> !categoriasProcesadas.contains(pedido.getCategoria())) // Filtrar categorías no procesadas
+                .peek(pedido -> categoriasProcesadas.add(pedido.getCategoria())) // Agregar categoría procesada
+                .count(); // Contar categorías únicas
     }
 
     private Pedido calcularPedidoMasBarato(List<Pedido> pedidos) {
-        Pedido masBarato = null;
-        for (Pedido pedido : pedidos) {
-            if (masBarato == null || pedido.getValorTotal().compareTo(masBarato.getValorTotal()) < 0) {
-                masBarato = pedido;
-            }
-        }
-        return masBarato;
+        return pedidos.stream()
+                .min((p1, p2) -> p1.getValorTotal().compareTo(p2.getValorTotal())) // Obtener el pedido más barato
+                .orElse(null); // Retornar null si no hay pedidos
     }
 
     private Pedido calcularPedidoMasCaro(List<Pedido> pedidos) {
-        Pedido masCaro = null;
-        for (Pedido pedido : pedidos) {
-            if (masCaro == null || pedido.getValorTotal().compareTo(masCaro.getValorTotal()) > 0) {
-                masCaro = pedido;
-            }
-        }
-        return masCaro;
+        return pedidos.stream()
+                .max((p1, p2) -> p1.getValorTotal().compareTo(p2.getValorTotal())) // Obtener el pedido más caro
+                .orElse(null); // Retornar null si no hay pedidos
     }
 
     public int getTotalDePedidosRealizados() {
