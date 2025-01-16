@@ -3,6 +3,7 @@ package com.alura.comex;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 
 public class InformeSintetico {
@@ -14,32 +15,64 @@ public class InformeSintetico {
     private Pedido pedidoMasCaro;
 
     public InformeSintetico(List<Pedido> pedidos) {
-        this.totalDePedidosRealizados = pedidos.size();
-        this.totalDeProductosVendidos = 0;
-        this.montoDeVentas = BigDecimal.ZERO;
-        this.totalDeCategorias = 0;
-        this.pedidoMasBarato = null;
-        this.pedidoMasCaro = null;
+        this.totalDePedidosRealizados = calcularTotalDePedidosRealizados(pedidos);
+        this.totalDeProductosVendidos = calcularTotalDeProductosVendidos(pedidos);
+        this.montoDeVentas = calcularMontoDeVentas(pedidos);
+        this.totalDeCategorias = calcularTotalDeCategorias(pedidos);
+        this.pedidoMasBarato = calcularPedidoMasBarato(pedidos);
+        this.pedidoMasCaro = calcularPedidoMasCaro(pedidos);
+    }
 
-        CategoriasProcesadas categoriasProcesadas = new CategoriasProcesadas();
+    private int calcularTotalDePedidosRealizados(List<Pedido> pedidos) {
+        return pedidos.size();
+    }
 
+    private int calcularTotalDeProductosVendidos(List<Pedido> pedidos) {
+        int total = 0;
         for (Pedido pedido : pedidos) {
-            this.totalDeProductosVendidos += pedido.getCantidad();
-            this.montoDeVentas = this.montoDeVentas.add(pedido.getPrecio().multiply(new BigDecimal(pedido.getCantidad())));
+            total += pedido.getCantidad();
+        }
+        return total;
+    }
 
-            if (pedidoMasBarato == null || pedido.getValorTotal().compareTo(pedidoMasBarato.getValorTotal()) < 0) {
-                pedidoMasBarato = pedido;
-            }
+    private BigDecimal calcularMontoDeVentas(List<Pedido> pedidos) {
+        BigDecimal total = BigDecimal.ZERO;
+        for (Pedido pedido : pedidos) {
+            total = total.add(pedido.getValorTotal());
+        }
+        return total;
+    }
 
-            if (pedidoMasCaro == null || pedido.getValorTotal().compareTo(pedidoMasCaro.getValorTotal()) > 0) {
-                pedidoMasCaro = pedido;
-            }
-
+    private int calcularTotalDeCategorias(List<Pedido> pedidos) {
+        CategoriasProcesadas categoriasProcesadas = new CategoriasProcesadas();
+        int total = 0;
+        for (Pedido pedido : pedidos) {
             if (!categoriasProcesadas.contains(pedido.getCategoria())) {
-                totalDeCategorias++;
+                total++;
                 categoriasProcesadas.add(pedido.getCategoria());
             }
         }
+        return total;
+    }
+
+    private Pedido calcularPedidoMasBarato(List<Pedido> pedidos) {
+        Pedido masBarato = null;
+        for (Pedido pedido : pedidos) {
+            if (masBarato == null || pedido.getValorTotal().compareTo(masBarato.getValorTotal()) < 0) {
+                masBarato = pedido;
+            }
+        }
+        return masBarato;
+    }
+
+    private Pedido calcularPedidoMasCaro(List<Pedido> pedidos) {
+        Pedido masCaro = null;
+        for (Pedido pedido : pedidos) {
+            if (masCaro == null || pedido.getValorTotal().compareTo(masCaro.getValorTotal()) > 0) {
+                masCaro = pedido;
+            }
+        }
+        return masCaro;
     }
 
     public int getTotalDePedidosRealizados() {
