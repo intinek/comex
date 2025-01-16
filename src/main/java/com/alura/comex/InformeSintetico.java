@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 public class InformeSintetico {
     private int totalDePedidosRealizados;
@@ -41,11 +40,10 @@ public class InformeSintetico {
     }
 
     private int calcularTotalDeCategorias(List<Pedido> pedidos) {
-        // Usando Streams para contar categorías únicas
         return (int) pedidos.stream()
-                .map(Pedido::getCategoria) // Obtener la categoría de cada pedido
-                .distinct() // Filtrar categorías únicas
-                .count(); // Contar las categorías únicas
+                .map(Pedido::getCategoria)
+                .distinct()
+                .count();
     }
 
     private Pedido calcularPedidoMasBarato(List<Pedido> pedidos) {
@@ -78,16 +76,16 @@ public class InformeSintetico {
     }
 
     public String getPedidoMasBarato() {
-        return String.format("%s (%s)", 
+        return pedidoMasBarato != null ? String.format("%s (%s)", 
                 NumberFormat.getCurrencyInstance(new Locale("es", "AR"))
                 .format(pedidoMasBarato.getValorTotal().setScale(2, RoundingMode.HALF_DOWN)), 
-                pedidoMasBarato.getProducto());
+                pedidoMasBarato.getProducto()) : "No hay pedidos";
     }
 
     public String getPedidoMasCaro() {
-        return String.format("%s (%s)", 
+        return pedidoMasCaro != null ? String.format("%s (%s)", 
                 NumberFormat.getCurrencyInstance(new Locale("es", "AR"))
                 .format(pedidoMasCaro.getValorTotal().setScale(2, RoundingMode.HALF_DOWN)), 
-                pedidoMasCaro.getProducto());
+                pedidoMasCaro.getProducto()) : "No hay pedidos";
     }
 }
