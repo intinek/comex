@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class InformeSintetico {
     private int totalDePedidosRealizados;
@@ -34,18 +35,17 @@ public class InformeSintetico {
     }
 
     private BigDecimal calcularMontoDeVentas(List<Pedido> pedidos) {
-        // Usando Streams para calcular la suma de los valores totales de los pedidos
         return pedidos.stream()
-                .map(Pedido::getValorTotal) // Obtener el valor total de cada pedido
-                .reduce(BigDecimal.ZERO, BigDecimal::add); // Sumar todos los valores totales
+                .map(Pedido::getValorTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private int calcularTotalDeCategorias(List<Pedido> pedidos) {
-        CategoriasProcesadas categoriasProcesadas = new CategoriasProcesadas();
+        // Usando Streams para contar categorías únicas
         return (int) pedidos.stream()
-                .filter(pedido -> !categoriasProcesadas.contains(pedido.getCategoria()))
-                .peek(pedido -> categoriasProcesadas.add(pedido.getCategoria()))
-                .count();
+                .map(Pedido::getCategoria) // Obtener la categoría de cada pedido
+                .distinct() // Filtrar categorías únicas
+                .count(); // Contar las categorías únicas
     }
 
     private Pedido calcularPedidoMasBarato(List<Pedido> pedidos) {
